@@ -5120,6 +5120,54 @@ class TypeSpecTest {
     )
   }
 
+  @Test fun dontEscapeHeaderAndImplAsClassFieldNames() {
+    val typeSpec = TypeSpec.classBuilder("SomeDataClass")
+      .addModifiers(DATA)
+      .primaryConstructor(
+        FunSpec.constructorBuilder()
+          .addParameter("header", Int::class)
+          .addParameter("impl", Int::class)
+          .build(),
+      )
+      .build()
+    assertThat(toString(typeSpec)).isEqualTo(
+      """
+      |package com.squareup.tacos
+      |
+      |import kotlin.Int
+      |
+      |public data class MyDataClass(
+      |  header: Int,
+      |  impl: Int,
+      |)
+      |
+      """.trimMargin(),
+    )
+  }
+
+  @Test fun dontEscapeHeaderAndImplAsClassMethodNames() {
+    val typeSpec = TypeSpec.classBuilder("SomeClass")
+      .addFunction(FunSpec.builder("header").build())
+      .addFunction(FunSpec.builder("impl").build())
+      .build()
+    assertThat(toString(typeSpec)).isEqualTo(
+      """
+      |package com.squareup.tacos
+      |
+      |import kotlin.Int
+      |
+      |public class MyDataClass(
+      |  fun header() {
+      |  }
+      |
+      |  fun impl() {
+      |  }
+      |)
+      |
+      """.trimMargin(),
+    )
+  }
+
   @Test fun escapeClassNames() {
     val type = TypeSpec.classBuilder("fun").build()
     assertThat(type.toString()).isEqualTo(
